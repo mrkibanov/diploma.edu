@@ -1,0 +1,35 @@
+<h1 class="text-center">Login</h1>
+
+
+
+<div class="row">
+    <div class="col-lg-6 center-block">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+
+            </div>
+            <div class="panel-body">
+                <p>Please fill out the following fields to login:</p>
+                <form ng-submit="login()" role="form" novalidate>
+
+                    <div class="form-group field-loginform-email required">
+                        <label class="control-label" for="loginform-email">Username</label>
+                        <input ng-model="email" type="text" id="loginform-email" class="form-control">
+                    </div>
+
+                    <div class="form-group field-loginform-password required">
+                        <label class="control-label" for="loginform-password">Password</label>
+                        <input ng-model="password" type="password" id="loginform-password" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary" name="login-button">Login</button>
+                    </div>
+
+                    <p data-ng-show="error" class="error">{{ error }}</p>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

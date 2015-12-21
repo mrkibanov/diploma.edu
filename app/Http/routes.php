@@ -11,8 +11,14 @@
 |
 */
 
+use App\Http\Requests\VideoRequest;
+use App\Models\Discipline;
 use App\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Route;
+use Intervention\Image\ImageManager;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Blade;
@@ -54,35 +60,72 @@ Route::post('/login', function () {
     );
 });
 
-Route::post('/upload', function () {
-    ini_set('upload_max_filesize', '2000M');
-    ini_set('post_max_size', '2000M');
-    ini_set('max_input_time', 1000);
-    ini_set('max_execution_time', 1000);
+Route::post(
+    '/upload',
+    [
+        'middleware' => 'jwt.auth',
+        function (VideoRequest $request) {
 
-    Input::file('file')->move(public_path() . '/uploads' ,'file.mp4');
+            return Response::json(['fsdfsdfsd' => 'fsdfsdf'], 403);
 
-    return ['answer' => 'good'];
+            ini_set('upload_max_filesize', '2000M');
+            ini_set('post_max_size', '2000M');
+            ini_set('max_input_time', 1000);
+            ini_set('max_execution_time', 1000);
 
-});
+            $nameArray = explode('.', Input::file('file')->getClientOriginalName());
+            $extension = end($nameArray);
+            $newBaseFileName = time() . uniqid();
+            $newFileName = $newBaseFileName . '.' . $extension;
+            $basePath = public_path() . '/uploads/';
+            $videoPath = $basePath . 'video';
+            $framePath = $basePath . 'frames/' . $newBaseFileName . '.jpg';
+
+            Input::file('file')->move($videoPath , $newFileName);
+
+            FFMpeg\FFMpeg::create()
+                ->open($videoPath . '/' . $newFileName)
+                ->frame(FFMpeg\Coordinate\TimeCode::fromSeconds(5))
+                ->save($framePath);
+
+            $manager = new ImageManager(array('driver' => 'imagick'));
+
+            $manager
+                ->make($framePath)
+                ->resize(150, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                })
+                ->save($framePath);
+
+
+            return Response::json(['answer' => 'good']);
+        }
+    ]
+);
 
 Route::get('/professor', function () {
-    $models = User::professor()->orderBy('name')->get();
+    $models = User::professor()->with('disciplines')->orderBy('name')->get();
 
     return Response::json($models);
 });
 
-Route::get('/restricted', [
+Route::get('/discipline/{id}', function ($id) {
+    $model = Discipline::with('videos')->find($id);
+
+    return Response::json($model);
+});
+
+Route::get('/professorDisciplines/{professorId}', function ($professorId) {
+
+    $user = User::find($professorId);
+    $disciplines = $user->disciplines;
+
+    return Response::json($disciplines);
+});
+
+Route::post('/checkToken', [
     'before' => 'jwt-auth',
     function () {
-        $token = JWTAuth::getToken();
-        $user = JWTAuth::toUser($token);
-
-        return Response::json([
-            'data' => [
-                'email' => $user->email,
-                'registered_at' => $user->created_at->toDateTimeString()
-            ]
-        ]);
+        return Response::json(true);
     }
 ]);

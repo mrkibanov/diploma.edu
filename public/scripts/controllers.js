@@ -2,11 +2,12 @@
     'use strict';
 
     angular.module('app')
-        .controller('HomeController', ['$rootScope', '$scope', '$location', '$localStorage', 'Auth', 'User',
-            function ($rootScope, $scope, $location, $localStorage, Auth, User) {
-                $scope.user = User.getUserData();
+        .controller('HomeController', ['$rootScope', '$scope', '$location', '$localStorage', 'Auth', 'user',
+            function ($rootScope, $scope, $location, $localStorage, Auth, user) {
 
-                console.log($scope.user);
+                $scope.user = user;
+
+                $scope.isLoggedIn = Auth.isLoggedIn;
 
                 $scope._ = _;
 
@@ -34,22 +35,7 @@
                         window.location = "/"
                     });
                 };
-                $scope.token = $localStorage.token;
-                $scope.tokenClaims = Auth.getTokenClaims();
             }])
-
-        .controller('RestrictedController', ['$rootScope', '$scope', 'Data', function ($rootScope, $scope, Data) {
-            Data.getRestrictedData(function (res) {
-                $scope.data = res.data;
-            }, function () {
-                $rootScope.error = 'Failed to fetch restricted content.';
-            });
-            Data.getApiData(function (res) {
-                $scope.api = res.data;
-            }, function () {
-                $rootScope.error = 'Failed to fetch restricted API content.';
-            });
-        }])
         .controller('VideoController', ['$sce', '$scope', function ($sce, $scope) {
             $scope.config = {
                 preload: "none",
@@ -61,59 +47,64 @@
                 }
             };
         }])
-        .controller('ProfessorController', ['User', '$scope', 'professors', function (User, $scope, professors) {
-
-
-
-            $scope.professors = professors;
-            console.log ($scope.professors);
+        .controller('ProfessorController', ['$scope', 'professors', function ($scope, professors) {
+            $scope.professors = professors.data;
         }])
-        .controller('UploadController', ['$scope', 'FileUploader', function ($scope, FileUploader) {
-            var uploader = $scope.uploader = new FileUploader({
-                url: '/upload'
-            });
+        .controller('DisciplineController', ['$scope', 'discipline', function ($scope, discipline) {
+            console.log(discipline.data);
+            $scope.discipline = discipline.data;
+        }])
+        .controller(
+            'UploadController',
+            [
+                '$scope',
+                'FileUploader',
+                'JWTokenizer',
+                'Discipline',
+                'Auth',
+                function ($scope, FileUploader, JWTokenizer, Discipline, Auth) {
 
-            uploader.filters.push({
-                name: 'customFilter',
-                fn: function(item /*{File|FileLikeObject}*/, options) {
-                    return this.queue.length < 10;
+                    Discipline.getProfessorDisciplines($scope.user.id).then(function (result) {
+                        $scope.disciplines = result.data;
+                    });
+
+                    var uploader = $scope.uploader = new FileUploader({
+                            queueLimit: 1,
+                            url: '/upload'
+                        });
+
+                    $scope.submit = function () {
+                        $scope.$broadcast('show-errors-check-validity');
+
+                        if ($scope.videoForm.$invalid) {
+                            return;
+                        }
+
+                        uploader.uploadAll();
+                    };
+
+                    $scope.form = {
+                        description: { value: '', error: ''},
+                        title: { value: '', error: ''},
+                        discipline_id: { value: '', error: ''}
+                    };
+
+                    uploader.onBeforeUploadItem = function(item) {
+                        item.formData = [
+                            {title: $scope.form.title.value},
+                            {discipline_id: $scope.form.discipline_id.value},
+                            {description: $scope.form.description.value}
+                        ];
+
+                        JWTokenizer(item.headers);
+                    };
+
+                    uploader.onErrorItem = function (item, response, status, headers) {
+                        if (status === 401 || status === 403) {
+                            $injector.get('Auth').logout(function () { $location.path('/login'); })
+                        }
+                    }
                 }
-            });
-
-            uploader.onWhenAddingFileFailed = function(item /*{File|FileLikeObject}*/, filter, options) {
-                console.info('onWhenAddingFileFailed', item, filter, options);
-            };
-            uploader.onAfterAddingFile = function(fileItem) {
-                console.info('onAfterAddingFile', fileItem);
-            };
-            uploader.onAfterAddingAll = function(addedFileItems) {
-                console.info('onAfterAddingAll', addedFileItems);
-            };
-            uploader.onBeforeUploadItem = function(item) {
-                console.info('onBeforeUploadItem', item);
-            };
-            uploader.onProgressItem = function(fileItem, progress) {
-                console.info('onProgressItem', fileItem, progress);
-            };
-            uploader.onProgressAll = function(progress) {
-                console.info('onProgressAll', progress);
-            };
-            uploader.onSuccessItem = function(fileItem, response, status, headers) {
-                console.info('onSuccessItem', fileItem, response, status, headers);
-            };
-            uploader.onErrorItem = function(fileItem, response, status, headers) {
-                console.info('onErrorItem', fileItem, response, status, headers);
-            };
-            uploader.onCancelItem = function(fileItem, response, status, headers) {
-                console.info('onCancelItem', fileItem, response, status, headers);
-            };
-            uploader.onCompleteItem = function(fileItem, response, status, headers) {
-                console.info('onCompleteItem', fileItem, response, status, headers);
-            };
-            uploader.onCompleteAll = function() {
-                console.info('onCompleteAll');
-            };
-
-            console.info('uploader', uploader);
-        }]);
+            ]
+        );
 })();

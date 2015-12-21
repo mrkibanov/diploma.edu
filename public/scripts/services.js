@@ -2,7 +2,27 @@
     'use strict';
 
     angular.module('app')
-        .factory('Auth', ['$http', '$localStorage', function ($http, $localStorage) {
+        .factory('JWTokenizer', ['$localStorage', function ($localStorage) {
+
+            return function (headers) {
+
+                if ($localStorage.token) {
+                    headers.Authorization = 'Bearer ' + $localStorage.token;
+                }
+            }
+        }])
+        .factory('Auth', ['$http', '$localStorage', '$q', function ($http, $localStorage, $q) {
+            var tokenClaims = null;
+
+            var logout = function (success) {
+                delete $localStorage.token;
+                success();
+            };
+
+            var isLoggedIn = function () {
+                return $localStorage.token != null;
+            };
+
             function urlBase64Decode(str) {
                 var output = str.replace('-', '+').replace('_', '/');
                 switch (output.length % 4) {
@@ -20,18 +40,6 @@
                 return window.atob(output);
             }
 
-            function getClaimsFromToken() {
-                var token = $localStorage.token;
-                var user = {};
-                if (typeof token !== 'undefined') {
-                    var encoded = token.split('.')[1];
-                    user = JSON.parse(urlBase64Decode(encoded));
-                }
-                return user;
-            }
-
-            var tokenClaims = getClaimsFromToken();
-
             return {
                 register: function (data, success, error) {
                     $http.post('registration', data).success(success).error(error)
@@ -48,53 +56,90 @@
                             $rootScope.error = 'Invalid credentials.';
                         });
                 },
-                logout: function (success) {
-                    tokenClaims = {};
-                    delete $localStorage.token;
-                    success();
-                },
                 getTokenClaims: function () {
-                    return tokenClaims;
-                }
-            };
-        }
-        ])
-        .factory('Data', ['$http', function ($http) {
+                    var token = $localStorage.token;
+                    var deferred = $q.defer();
 
-            return {
-                getRestrictedData: function (success, error) {
-                    $http.get('restricted').success(success).error(error)
-                },
-                getApiData: function (success, error) {
-                    $http.get('restricted').success(success).error(error)
-                }
-            };
-        }
-        ])
-        .factory('User', ['Auth', '$http', function (Auth, $http) {
-            var data = {
-                    email: '',
-                    isAdmin: false
-                },
-                claims = Auth.getTokenClaims();
+                    if (tokenClaims !== null) {
+                        deferred.resolve(tokenClaims);
 
-            var isLoggedIn = function (claims) {
-                return !_.isEmpty(claims);
-            };
-
-            if (isLoggedIn(claims)) {
-
-                _.forEach(claims, function(claim, key) {
-
-                    if (!_.isUndefined(data[key])) {
-                        data[key] = claim;
+                        return deferred.promise;
                     }
-                });
-            }
 
+                    if (isLoggedIn()) {
+
+                        return $http.post('checkToken').then(
+                            function(response){
+
+                                if (response.data === true) {
+                                    tokenClaims = JSON.parse(urlBase64Decode(token.split('.')[1]));
+
+                                    return tokenClaims;
+                                }
+
+                                logout(function () {})
+                            },
+                            function() {
+                                logout(function () {})
+                            }
+                        );
+                    }
+
+                    tokenClaims = {};
+
+                    deferred.resolve(tokenClaims);
+
+                    return deferred.promise;
+                },
+                logout: logout,
+                isLoggedIn: isLoggedIn
+            };
+        }
+        ])
+        .factory('Discipline', ['$http', function ($http) {
+            return {
+                getDiscipline: function (id) {
+                    return $http.get('discipline/' + id);
+                },
+                getProfessorDisciplines: function (professorId) {
+                    return $http.get('professorDisciplines/' + professorId);
+                }
+            };
+        }])
+        .factory('User', ['Auth', '$http', '$q', function (Auth, $http, $q) {
             return {
                 getUserData: function () {
-                    return data;
+                    var data = {
+                        email: '',
+                        isAdmin: false,
+                        id: 0
+                    },
+                        requested = false;
+
+                    if (requested) {
+                        var deferred = $q.defer();
+
+                        deferred.resolve(data);
+
+                        return deferred.promise;
+                    }
+
+                    return Auth.getTokenClaims().then(
+                        function (response) {
+                            _.forEach(response, function(claim, key) {
+
+                                if (!_.isUndefined(data[key])) {
+                                    data[key] = claim;
+                                }
+                            });
+
+                            data.id = response.sub || 0;
+
+                            requested = true;
+
+                            return data;
+                        }
+                    );
                 },
                 getProfessors: function() {
                     return $http.get('professor');

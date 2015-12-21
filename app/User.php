@@ -78,4 +78,20 @@ class User extends Model implements AuthenticatableContract,
     {
         return $query->where('role', '=', self::ROLE_PROFESSOR);
     }
+
+    /**
+     * Get the disciplines for the professor user.
+     */
+    public function disciplines()
+    {
+        return $this->hasMany('App\Models\Discipline', 'professor_id');
+    }
+
+    /**
+     * Get all videos for the professor user.
+     */
+    public function videos()
+    {
+        return $this->hasMany('App\Models\Video');
+    }
 }

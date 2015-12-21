@@ -40,8 +40,8 @@ gulp.task("copyfiles", function() {
     gulp.src(bowerPath + "videogular/videogular.min.js")
         .pipe(gulp.dest(resourcesJsPath));
 
-    gulp.src(bowerPath + "angular-route/angular-route.min.js")
-        .pipe(gulp.dest(resourcesJsPath));
+/*    gulp.src(bowerPath + "angular-route/angular-route.min.js")
+        .pipe(gulp.dest(resourcesJsPath));*/
 
     gulp.src(bowerPath + "angular-strap/dist/angular-strap.min.js")
         .pipe(gulp.dest(resourcesJsPath));
@@ -63,6 +63,12 @@ gulp.task("copyfiles", function() {
 
     gulp.src(bowerPath + "ng-table/dist/ng-table.min.css")
         .pipe(gulp.dest(resourcesCssPath));
+
+    gulp.src(bowerPath + "angular-bootstrap-show-errors/src/showErrors.min.js")
+        .pipe(gulp.dest(resourcesJsPath));
+
+    gulp.src(bowerPath + "angular-ui-router/release/angular-ui-router.min.js")
+        .pipe(gulp.dest(resourcesJsPath));
 });
 
 gulp.task("copyjssources", function() {
@@ -84,8 +90,8 @@ gulp.task("copyjssources", function() {
     gulp.src(resourcesJsPath + "videogular.min.js")
         .pipe(gulp.dest(publicJsPath));
 
-    gulp.src(resourcesJsPath + "angular-route.min.js")
-        .pipe(gulp.dest(publicJsPath));
+/*    gulp.src(resourcesJsPath + "angular-route.min.js")
+        .pipe(gulp.dest(publicJsPath));*/
 
     gulp.src(resourcesJsPath + "angular-strap.min.js")
         .pipe(gulp.dest(publicJsPath));
@@ -100,6 +106,12 @@ gulp.task("copyjssources", function() {
         .pipe(gulp.dest(publicJsPath));
 
     gulp.src(resourcesJsPath + "ng-table.min.js")
+        .pipe(gulp.dest(publicJsPath));
+
+    gulp.src(resourcesJsPath + "showErrors.min.js")
+        .pipe(gulp.dest(publicJsPath));
+
+    gulp.src(resourcesJsPath + "angular-ui-router.min.js")
         .pipe(gulp.dest(publicJsPath));
 });
 
@@ -125,10 +137,12 @@ elixir(function(mix) {
             'js/angular-sanitize.min.js',
             'js/videogular.min.js',
             'js/ngStorage.min.js',
-            'js/angular-route.min.js',
+            /*'js/angular-route.min.js',*/
             'js/angular-strap.min.js',
             'js/angular-file-upload.min.js',
-            'js/ng-table.min.js'
+            'js/ng-table.min.js',
+            'js/showErrors.min.js',
+            'js/angular-ui-router.min.js'
         ],
         publicJsPath + 'main.js',
         resourcesPath

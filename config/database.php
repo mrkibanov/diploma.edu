@@ -54,10 +54,10 @@ return [
 
         'mysql' => [
             'driver'    => 'mysql',
-            'host'      => env('DB_HOST', 'localhost'),
+            'host'      => env('DB_HOST', 'diploma.edu'),
             'database'  => env('DB_DATABASE', 'diploma'),
-            'username'  => env('DB_USERNAME', 'tester'),
-            'password'  => env('DB_PASSWORD', 'a12345678'),
+            'username'  => env('DB_USERNAME', 'mysql'),
+            'password'  => env('DB_PASSWORD', 'mysql'),
             'charset'   => 'utf8',
             'collation' => 'utf8_unicode_ci',
             'prefix'    => '',

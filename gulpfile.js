@@ -26,7 +26,7 @@ gulp.task("copyfiles", function() {
      .pipe(gulp.dest(resourcesJsPath));
 
     gulp.src(bowerPath + "bootstrap/dist/fonts/**")
-     .pipe(gulp.dest(resourcesPath + "/fonts"));
+     .pipe(gulp.dest(publicPath + "/fonts"));
 
     gulp.src(bowerPath + "angular/angular.min.js")
         .pipe(gulp.dest(resourcesJsPath));

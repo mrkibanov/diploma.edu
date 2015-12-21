@@ -25,9 +25,15 @@
                         password: $scope.password
                     };
 
-                    Auth.register(formData, successAuth, function (res) {
-                        $rootScope.error = res.error || 'Failed to sign up.';
-                    })
+                    Auth.register(
+                        formData,
+                        function (res) {
+                            window.location = "/";
+                        },
+                        function (res) {
+                            $rootScope.error = res.error || 'Failed to sign up.';
+                        }
+                    )
                 };
 
                 $scope.logout = function () {
@@ -36,11 +42,12 @@
                     });
                 };
             }])
-        .controller('VideoController', ['$sce', '$scope', function ($sce, $scope) {
+        .controller('WatchController', ['$sce', '$scope', 'video', function ($sce, $scope, video) {
+            $scope.video = video.data;
             $scope.config = {
                 preload: "none",
                 sources: [
-                    {src: "/uploads/file.mp4", type: "video/mp4"}
+                    {src: "/uploads/video/" + video.data.file_name + ".mp4", type: "video/mp4"}
                 ],
                 theme: {
                     url: "http://www.videogular.com/styles/themes/default/latest/videogular.css"
@@ -50,9 +57,9 @@
         .controller('ProfessorController', ['$scope', 'professors', function ($scope, professors) {
             $scope.professors = professors.data;
         }])
-        .controller('DisciplineController', ['$scope', 'discipline', function ($scope, discipline) {
-            console.log(discipline.data);
-            $scope.discipline = discipline.data;
+        .controller('VideosController', ['$scope', 'videos', function ($scope, videos) {
+            console.log(videos.data);
+            $scope.videos = videos.data;
         }])
         .controller(
             'UploadController',
@@ -62,7 +69,8 @@
                 'JWTokenizer',
                 'Discipline',
                 'Auth',
-                function ($scope, FileUploader, JWTokenizer, Discipline, Auth) {
+                '$location',
+                function ($scope, FileUploader, JWTokenizer, Discipline, Auth, $location) {
 
                     Discipline.getProfessorDisciplines($scope.user.id).then(function (result) {
                         $scope.disciplines = result.data;
@@ -72,6 +80,14 @@
                             queueLimit: 1,
                             url: '/upload'
                         });
+
+                    uploader.filters.push({
+                        name: 'videoFilter',
+                        fn: function(item, options) {
+                            var type = '|' + item.type.slice(item.type.lastIndexOf('/') + 1) + '|';
+                            return '|mp4|'.indexOf(type) !== -1;
+                        }
+                    });
 
                     $scope.submit = function () {
                         $scope.$broadcast('show-errors-check-validity');
@@ -101,7 +117,7 @@
 
                     uploader.onErrorItem = function (item, response, status, headers) {
                         if (status === 401 || status === 403) {
-                            $injector.get('Auth').logout(function () { $location.path('/login'); })
+                            Auth.logout(function () { $location.path('/login'); })
                         }
                     }
                 }

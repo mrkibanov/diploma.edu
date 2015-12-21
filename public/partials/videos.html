@@ -1,0 +1,30 @@
+<div class="table-responsive">
+    <table class="table table-condensed table-bordered table-hover you-table">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Discipline</th>
+            <th>Preview</th>
+            <th>Added</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="video in videos">
+            <td>
+                <a target="_blank" ui-sref="state1.watch({id: video.id})">
+                {{video.title}}
+                </a>
+            </td>
+            <td>{{video.discipline.name}}</td>
+            <td class="text-center">
+                <a target="_blank" ui-sref="state1.watch({id: video.id})">
+                    <img ng-src="/uploads/frames/{{video.file_name}}.jpg" alt="Description" />
+                </a>
+            </td>
+            <td>
+                {{video.created_at}}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

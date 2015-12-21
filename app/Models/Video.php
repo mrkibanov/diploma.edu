@@ -7,16 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Video extends Model
 {
-    protected $table = 'videos';
+    protected $fillable = ['description', 'discipline_id', 'title'];
 
-    public function rules()
-    {
-        return [
-            'name'        => 'required',
-            //'sku'         => 'required|unique:products,sku,' . $this->get('id'),
-            'image'       => 'required|mimes:video'
-        ];
-    }
+    protected $table = 'videos';
 
     /**
      * Get the user that owns the video.

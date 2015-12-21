@@ -11,6 +11,13 @@
                 }
             }
         }])
+        .factory('Video', ['$http', function ($http) {
+            return {
+                getById: function (id) {
+                    return $http.get('video/' + id);
+                }
+            }
+        }])
         .factory('Auth', ['$http', '$localStorage', '$q', function ($http, $localStorage, $q) {
             var tokenClaims = null;
 
@@ -98,8 +105,8 @@
         ])
         .factory('Discipline', ['$http', function ($http) {
             return {
-                getDiscipline: function (id) {
-                    return $http.get('discipline/' + id);
+                getDisciplineVideos: function (id) {
+                    return $http.get('videos/' + id);
                 },
                 getProfessorDisciplines: function (professorId) {
                     return $http.get('professorDisciplines/' + professorId);

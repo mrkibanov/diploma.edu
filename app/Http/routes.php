@@ -13,8 +13,10 @@
 
 use App\Http\Requests\VideoRequest;
 use App\Models\Discipline;
+use App\Models\Video;
 use App\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
@@ -64,9 +66,13 @@ Route::post(
     '/upload',
     [
         'middleware' => 'jwt.auth',
+        /**
+         * @param VideoRequest $request
+         * @return mixed
+         */
         function (VideoRequest $request) {
 
-            return Response::json(['fsdfsdfsd' => 'fsdfsdf'], 403);
+            /*return Response::json(['fsdfsdfsd' => 'fsdfsdf'], 403);*/
 
             ini_set('upload_max_filesize', '2000M');
             ini_set('post_max_size', '2000M');
@@ -83,7 +89,12 @@ Route::post(
 
             Input::file('file')->move($videoPath , $newFileName);
 
-            FFMpeg\FFMpeg::create()
+            FFMpeg\FFMpeg::create(
+                [
+                    'ffmpeg.binaries' => base_path() . '/ffmpeg/ffmpeg.exe',
+                    'ffprobe.binaries' => base_path() . '/ffmpeg/ffprobe.exe',
+                ]
+            )
                 ->open($videoPath . '/' . $newFileName)
                 ->frame(FFMpeg\Coordinate\TimeCode::fromSeconds(5))
                 ->save($framePath);
@@ -97,6 +108,15 @@ Route::post(
                 })
                 ->save($framePath);
 
+            $model = new Video();
+
+            $model->description = $request->description;
+            $model->discipline_id = $request->discipline_id;
+            $model->title = $request->title;
+            $model->user_id = Auth::user()->id;
+            $model->file_name = $newBaseFileName;
+
+            $model->save();
 
             return Response::json(['answer' => 'good']);
         }
@@ -109,8 +129,14 @@ Route::get('/professor', function () {
     return Response::json($models);
 });
 
-Route::get('/discipline/{id}', function ($id) {
-    $model = Discipline::with('videos')->find($id);
+Route::get('/video/{id}', function ($id) {
+    $model = Video::find($id);
+
+    return Response::json($model);
+});
+
+Route::get('/videos/{discipline_id}', function ($discipline_id) {
+    $model = Video::with('discipline')->where('discipline_id', '=', $discipline_id)->get();
 
     return Response::json($model);
 });

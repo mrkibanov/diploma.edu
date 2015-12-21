@@ -14,13 +14,13 @@
 
             <div ng-show="uploader.isHTML5">
                 <!-- 3. nv-file-over uploader="link" over-class="className" -->
-                <div class="well my-drop-zone" nv-file-over="" uploader="uploader">
+                <div class="well my-drop-zone" filters="videoFilter" nv-file-over="" uploader="uploader">
                     Base drop zone
                 </div>
             </div>
 
             Single
-            <input type="file" nv-file-select="" uploader="uploader" />
+            <input type="file" nv-file-select="" filters="videoFilter" uploader="uploader" />
         </div>
 
         <div class="col-md-9" style="margin-bottom: 40px">
@@ -106,7 +106,7 @@
                         ng-click="submit()">
 
 
-                    <span class="glyphicon glyphicon-upload"></span> Завантажити
+                     Завантажити <span class="glyphicon glyphicon-upload"></span>
                 </button>
             </div>
 

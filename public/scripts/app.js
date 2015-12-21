@@ -11,8 +11,8 @@
             'ui.router'
         ])
         .constant('RESTRICTED_ROUTES', {
-            identifiers: [
-                'upload'
+            states: [
+                'state1.upload'
             ]
         })
         .factory('Interceptors', [
@@ -36,13 +36,7 @@
                         JWTokenizer(config.headers);
 
                         return config;
-                    }/*,
-                    responseError: function (response) {
-
-                        $injector.get('Auth').logout(function () { $location.path('/login'); })
-
-                        return $q.reject(response);
-                    }*/
+                    }
                 };
             }
         ])
@@ -66,10 +60,15 @@
                     controller: 'HomeController',
                     templateUrl: 'partials/login.html'
                 }).
-                state('state1.video', {
-                    url: "video",
-                    templateUrl: 'partials/video.html',
-                    controller: 'VideoController'
+                state('state1.watch', {
+                    url: "watch/:id",
+                    templateUrl: 'partials/watch.html',
+                    controller: 'WatchController',
+                    resolve: {
+                        video: ['$stateParams', 'Video', function ($stateParams, Video) {
+                            return Video.getById($stateParams.id);
+                        }]
+                    }
                 }).
                 state('state1.upload', {
                     url: 'upload',
@@ -84,37 +83,33 @@
                         professors: ['User', function (User) {
                             return User.getProfessors();
                         }]
-                    },
-                    id: 'professor'
+                    }
                 }).
-                state('state1.discipline', {
-                    url: 'discipline/:id',
-                    templateUrl: 'partials/discipline.html',
-                    controller: 'DisciplineController',
+                state('state1.videos', {
+                    url: 'videos/:id',
+                    templateUrl: 'partials/videos.html',
+                    controller: 'VideosController',
                     resolve: {
-                        discipline: ['$stateParams', 'Discipline', function ($stateParams, Discipline) {
-                            return Discipline.getDiscipline($stateParams.id);
+                        videos: ['$stateParams', 'Discipline', function ($stateParams, Discipline) {
+                            return Discipline.getDisciplineVideos($stateParams.id);
                         }]
-                    },
-                    id: 'discipline'
-                });
-
-/*            $routeProvider.
-                when('/registration', {
+                    }
+                }).
+                state('state1.registration', {
+                    url: 'registration',
                     templateUrl: 'partials/registration.html',
-                    controller: 'HomeController',
-                    id: 'registration'
-                })
-*/
+                    controller: 'HomeController'
+                });
 
             $httpProvider.interceptors.push(
                 'Interceptors'
             );
         }])
         .run(function($rootScope, $location, $localStorage, RESTRICTED_ROUTES) {
-            $rootScope.$on( "$routeChangeStart", function(event, next) {
+            $rootScope.$on( "$stateChangeStart", function(event, next) {
                 if ($localStorage.token == null) {
-                    if (_.indexOf(RESTRICTED_ROUTES.identifiers, next.id) > -1) {
+                    console.log(next);
+                    if (_.indexOf(RESTRICTED_ROUTES.states, next.name) > -1) {
                         $location.path("/login");
                     }
                 }

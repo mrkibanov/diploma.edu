@@ -1,5 +1,5 @@
 <div class="table-responsive">
-<table class="table table-condensed table-bordered table-hover">
+<table class="table table-condensed table-bordered table-hover you-table">
     <thead>
         <tr>
             <th>Email</th>
@@ -19,7 +19,7 @@
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
                         <li ng-repeat="discipline in professor.disciplines">
-                            <a ui-sref="state1.discipline({id: discipline.id})">{{discipline.name}}</a>
+                            <a ui-sref="state1.videos({id: discipline.id})">{{discipline.name}}</a>
                         </li>
                     </ul>
                 </div>

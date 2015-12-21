@@ -7,6 +7,8 @@
 
                 $scope.user = user;
 
+                console.log($scope.user);
+
                 $scope.isLoggedIn = Auth.isLoggedIn;
 
                 $scope._ = _;
@@ -22,7 +24,10 @@
                 $scope.register = function () {
                     var formData = {
                         email: $scope.email,
-                        password: $scope.password
+                        password: $scope.password,
+                        name: $scope.name,
+                        surname: $scope.surname,
+                        patronymic: $scope.patronymic
                     };
 
                     Auth.register(
@@ -44,6 +49,7 @@
             }])
         .controller('WatchController', ['$sce', '$scope', 'video', function ($sce, $scope, video) {
             $scope.video = video.data;
+            console.log($scope.video)
             $scope.config = {
                 preload: "none",
                 sources: [
@@ -56,6 +62,18 @@
         }])
         .controller('ProfessorController', ['$scope', 'professors', function ($scope, professors) {
             $scope.professors = professors.data;
+        }])
+        .controller('DisciplinesController', ['$scope', 'Discipline', 'Auth', 'User', function ($scope, Discipline, Auth, User) {
+
+            $scope.submit = function () {
+
+                Discipline.addDiscipline({name: $scope.title}).then(function () {
+                        User.getUserData().then(function (response) {
+                            $scope.$parent.user = response;
+                            console.log('u:', $scope.$parent.user);
+                        })
+                });
+            }
         }])
         .controller('VideosController', ['$scope', 'videos', function ($scope, videos) {
             console.log(videos.data);

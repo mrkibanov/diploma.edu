@@ -8631,3 +8631,11 @@ a.desc:after {
   text-align: center;
   vertical-align: middle !important;
 }
+
+.bottom-buffer {
+  margin-bottom: 20px;
+}
+
+.left-unpad {
+  padding-left: 0px !important;
+}

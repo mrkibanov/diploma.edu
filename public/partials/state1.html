@@ -11,12 +11,13 @@
             </div>
             <div ng-class="!navCollapsed && 'in'" ng-click="navCollapsed=true" class="collapse navbar-collapse" >
                 <ul class="navbar-nav navbar-right nav">
-                    <li data-match-route="/professor">
+                    <li data-match-route="{{state1.professor}}">
                         <a ui-sref="state1.professor">Professors</a>
                     </li>
-                    <li data-match-route="/dashboard" ng-show="isLoggedIn()" class="ng-hide">
-                        <a href="#/dashboard">Dashboard</a>
+                    <li data-match-route="/disciplines" ng-show="isLoggedIn()">
+                        <a ui-sref="state1.disciplines">Disciplines</a>
                     </li>
+
                     <li data-match-route="/upload" ng-show="isLoggedIn()">
                         <a ui-sref="state1.upload">Upload</a>
                     </li>
@@ -36,10 +37,10 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="jumbotron">
-                        <h1>Welcome to JWT example!</h1>
+                        <h1>Welcome to YouTube Lite app!</h1>
 
                         <div class="row">
-                            <div data-ng-hide="isLoggedIn()" class="col-md-6">
+                            <div data-ng-hide="isLoggedIn()" class="col-md-6 center-block">
                                 <a href="#/registration" class="btn btn-default btn-primary margin-right" role="button">Sign up</a>
                                 or
                                 <a href="#/login" class="btn btn-default btn-primary margin-left" role="button">Sign in</a>

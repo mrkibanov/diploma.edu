@@ -1,0 +1,38 @@
+<div class="navbar navbar-default">
+    <div class="navbar-header">
+        <a class="navbar-brand" href="#">Disciplines</a>
+    </div>
+</div>
+
+<div class="col-md-6 float-left bottom-buffer left-unpad">
+    <form class="form-inline" name="disciplineForm" novalidate>
+            <div class="form-group required">
+                <input placeholder="Title" ng-model="title" value="" type="text" name="title" id="title" class="form-control" ng-required="true">
+            </div>
+
+            <button type="button" class="btn btn-success btn-s" ng-click="submit()" ng-disabled="disciplineForm.$invalid">
+                Add <span class="glyphicon glyphicon-plus"></span>
+            </button>
+    </form>
+</div>
+
+<div class="clearfix"></div>
+
+<div class="table-responsive">
+    <table class="table table-condensed table-bordered table-hover you-table">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Added</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="discipline in user.disciplines">
+            <td>{{discipline.name}}</td>
+            <td>
+                {{discipline.created_at}}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

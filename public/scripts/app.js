@@ -95,6 +95,11 @@
                         }]
                     }
                 }).
+                state('state1.disciplines', {
+                    url: 'disciplines',
+                    templateUrl: 'partials/disciplines.html',
+                    controller: 'DisciplinesController'
+                }).
                 state('state1.registration', {
                     url: 'registration',
                     templateUrl: 'partials/registration.html',

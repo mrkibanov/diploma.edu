@@ -1,11 +1,55 @@
-<h1>
-    {{video.title}}
-</h1>
+<ol class="breadcrumb">
+    <li><a ui-sref="state1.professor">Professors</a></li>
+    <li><a ui-sref="state1.videos({id: video.discipline.id})">{{video.discipline.name}}</a></li>
+    <li class="active">{{video.title}}</li>
+</ol>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 style="margin: 0;">{{video.title}} <div class="glyphicon glyphicon-facetime-video pull-right"></div></h3>
+    </div>
+    <div class="panel-body">
+
+        <videogular vg-theme="this.config.theme.url">
+            <vg-media vg-src="this.config.sources"
+                      vg-tracks="this.config.tracks"
+                      vg-native-controls="true">
+            </vg-media>
+        </videogular>
+
+        <p style="margin-top: 15px;" class="text-right">by <b style="font-size: 16px;"> {{video.user.surname}} {{video.user.name}}</b> </p>
+
+        <p><b>Discipline:</b> {{video.discipline.name}}</p>
+        <p><b>Added:</b> {{video.created_at}}</p>
+        <hr />
+        <p><b>Description:</b> {{video.description}}</p>
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <b>Recently uploaded videos on "{{video.discipline.name}}"</b>
+    </div>
+
+    <div class="panel-body">
+        <div class="col-sm-6 col-md-4" ng-repeat="similarVideo in video.discipline.videos">
+            <div class="thumbnail">
+                <a target="_blank" ui-sref="state1.watch({id: similarVideo.id})">
+                    <img style="width: 100%" ng-src="/uploads/frames/{{similarVideo.file_name}}.jpg" alt="Description" />
+                </a>
 
 
-<videogular vg-theme="this.config.theme.url">
-    <vg-media vg-src="this.config.sources"
-              vg-tracks="this.config.tracks"
-              vg-native-controls="true">
-    </vg-media>
-</videogular>
+
+                <div class="caption">
+                    <h3 class="text-center"><a target="_blank" ui-sref="state1.watch({id: similarVideo.id})">{{similarVideo.title}}</a></h3>
+                    <div class="clearfix">
+                        <p class="pull-right">by <b style="font-size: 13px;"> {{video.user.surname}} {{video.user.name}}</b> </p>
+                        <p class="pull-left text-muted">{{similarVideo.created_at}}</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

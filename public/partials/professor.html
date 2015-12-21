@@ -1,4 +1,10 @@
-<div class="table-responsive">
+<div class="navbar navbar-default">
+    <div class="navbar-header">
+        <a class="navbar-brand" href="#">Professors</a>
+    </div>
+</div>
+
+<div>
 <table class="table table-condensed table-bordered table-hover you-table">
     <thead>
         <tr>
@@ -10,7 +16,7 @@
     <tbody>
         <tr ng-repeat="professor in professors">
             <td>{{professor.email}}</td>
-            <td>{{professor.name}}</td>
+            <td>{{professor.surname}} {{professor.name}} {{professor.patronymic}}</td>
             <td>
 
                 <div class="dropdown">
@@ -19,7 +25,7 @@
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
                         <li ng-repeat="discipline in professor.disciplines">
-                            <a ui-sref="state1.videos({id: discipline.id})">{{discipline.name}}</a>
+                            <a ui-sref="state1.videos({id: discipline.id})">{{discipline.name}} ({{discipline.videos.length}} videos)</a>
                         </li>
                     </ul>
                 </div>

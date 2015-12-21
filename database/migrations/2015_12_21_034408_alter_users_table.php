@@ -15,8 +15,14 @@ class AlterUsersTable extends Migration
     {
         Schema::table('users', function($table)
         {
-            $table->string('surname');
-            $table->string('father');
+            $table->dropColumn('name');
+        });
+
+        Schema::table('users', function($table)
+        {
+            $table->string('name')->nullable();
+            $table->string('surname')->nullable();
+            $table->string('patronymic')->nullable();
         });
     }
 
@@ -30,7 +36,7 @@ class AlterUsersTable extends Migration
         Schema::table('users', function($table)
         {
             $table->dropColumn('surname');
-            $table->dropColumn('father');
+            $table->dropColumn('patronymic');
         });
     }
 }

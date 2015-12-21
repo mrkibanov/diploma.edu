@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 use Intervention\Image\ImageManager;
+use Symfony\Component\HttpFoundation\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Blade;
@@ -32,13 +33,23 @@ Route::get('/', function () {
     return view('spa');
 });
 
+Route::post('/createDiscipline', ['middleware' => 'jwt.auth', function () {
+
+    $discipline = new Discipline();
+    $discipline->name = Input::get('name');
+    $discipline->professor_id = Auth::user()->id;;
+    $discipline->save();
+
+    return Response::json($discipline);
+}]);
+
 Route::post('/registration', function () {
-    $credentials = Input::only('email', 'password');
+    $credentials = Input::only('email', 'password', 'name', 'surname', 'patronymic');
 
     try {
         $user = User::create($credentials);
     } catch (Exception $e) {
-        return Response::json(['error' => 'User already exists.'], HttpResponse::HTTP_CONFLICT);
+        return Response::json(['error' => $e->getMessage()], HttpResponse::HTTP_CONFLICT);
     }
 
     $token = JWTAuth::fromUser($user);
@@ -57,7 +68,14 @@ Route::post('/login', function () {
 
     return Response::json(
         [
-            'token' => JWTAuth::fromUser($user, ['isAdmin' => $user->getIsAdmin(), 'email' => $user->email]),
+            'token' => JWTAuth::fromUser(
+                $user,
+                [
+                    'isAdmin' => $user->getIsAdmin(),
+                    'email' => $user->email,
+                    'disciplines' => $user->disciplines
+                ]
+            ),
         ]
     );
 });
@@ -124,19 +142,34 @@ Route::post(
 );
 
 Route::get('/professor', function () {
-    $models = User::professor()->with('disciplines')->orderBy('name')->get();
+    $models = User::professor()->with('disciplines.videos')->orderBy('name')->get();
 
     return Response::json($models);
 });
 
 Route::get('/video/{id}', function ($id) {
-    $model = Video::find($id);
+    $model = Video::with(
+        [
+            'discipline' => function ($q) use ($id) {
+                $q->with(
+                    [
+                        'videos' => function ($q) use ($id) {
+                            $q
+                                ->orderBy('created_at', 'DESC')
+                                ->where('id', '!=', $id)
+                                ->limit(3);
+                        }
+                    ]
+                );
+            }
+        ]
+    )->with('user')->find($id);
 
     return Response::json($model);
 });
 
 Route::get('/videos/{discipline_id}', function ($discipline_id) {
-    $model = Video::with('discipline')->where('discipline_id', '=', $discipline_id)->get();
+    $model = Video::with('discipline')->with('user')->where('discipline_id', '=', $discipline_id)->get();
 
     return Response::json($model);
 });
@@ -153,5 +186,25 @@ Route::post('/checkToken', [
     'before' => 'jwt-auth',
     function () {
         return Response::json(true);
+    }
+]);
+
+Route::post('/updateToken', [
+    'middleware' => 'jwt.auth',
+    function () {
+        $user = Auth::user();
+
+        return Response::json(
+            [
+                'token' => JWTAuth::fromUser(
+                    $user,
+                    [
+                        'isAdmin' => $user->getIsAdmin(),
+                        'email' => $user->email,
+                        'disciplines' => $user->disciplines
+                    ]
+                ),
+            ]
+        );
     }
 ]);

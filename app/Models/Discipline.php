@@ -8,6 +8,8 @@ class Discipline extends Model
 {
     protected $table = 'disciplines';
 
+    protected $fillable = ['name'];
+
     /**
      * Get the professor that owns the discipline.
      */

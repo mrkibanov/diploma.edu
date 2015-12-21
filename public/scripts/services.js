@@ -19,7 +19,6 @@
             }
         }])
         .factory('Auth', ['$http', '$localStorage', '$q', function ($http, $localStorage, $q) {
-            var tokenClaims = null;
 
             var logout = function (success) {
                 delete $localStorage.token;
@@ -28,6 +27,33 @@
 
             var isLoggedIn = function () {
                 return $localStorage.token != null;
+            };
+
+            var getTokenClaims = function () {
+                var token = $localStorage.token;
+                var deferred = $q.defer();
+
+                if (isLoggedIn()) {
+
+                    return $http.post('checkToken').then(
+                        function(response){
+
+                            if (response.data === true) {
+
+                                return JSON.parse(urlBase64Decode(token.split('.')[1]));
+                            }
+
+                            logout(function () {})
+                        },
+                        function() {
+                            logout(function () {})
+                        }
+                    );
+                }
+
+                deferred.resolve({});
+
+                return deferred.promise;
             };
 
             function urlBase64Decode(str) {
@@ -51,6 +77,13 @@
                 register: function (data, success, error) {
                     $http.post('registration', data).success(success).error(error)
                 },
+                updateClaims: function () {
+                    return $http
+                        .post('updateToken')
+                        .then(function (response) {
+                            $localStorage.token = response.data.token;
+                        });
+                },
                 login: function (data) {
 
                     $http
@@ -63,53 +96,25 @@
                             $rootScope.error = 'Invalid credentials.';
                         });
                 },
-                getTokenClaims: function () {
-                    var token = $localStorage.token;
-                    var deferred = $q.defer();
-
-                    if (tokenClaims !== null) {
-                        deferred.resolve(tokenClaims);
-
-                        return deferred.promise;
-                    }
-
-                    if (isLoggedIn()) {
-
-                        return $http.post('checkToken').then(
-                            function(response){
-
-                                if (response.data === true) {
-                                    tokenClaims = JSON.parse(urlBase64Decode(token.split('.')[1]));
-
-                                    return tokenClaims;
-                                }
-
-                                logout(function () {})
-                            },
-                            function() {
-                                logout(function () {})
-                            }
-                        );
-                    }
-
-                    tokenClaims = {};
-
-                    deferred.resolve(tokenClaims);
-
-                    return deferred.promise;
-                },
+                getTokenClaims: getTokenClaims,
                 logout: logout,
                 isLoggedIn: isLoggedIn
             };
         }
         ])
-        .factory('Discipline', ['$http', function ($http) {
+        .factory('Discipline', ['$http', 'Auth', function ($http, Auth) {
             return {
                 getDisciplineVideos: function (id) {
                     return $http.get('videos/' + id);
                 },
                 getProfessorDisciplines: function (professorId) {
                     return $http.get('professorDisciplines/' + professorId);
+                },
+                addDiscipline: function (data) {
+                    return $http.post('createDiscipline', data)
+                        .then(function() {
+                            return Auth.updateClaims()
+                        });
                 }
             };
         }])
@@ -119,17 +124,9 @@
                     var data = {
                         email: '',
                         isAdmin: false,
+                        disciplines: [],
                         id: 0
-                    },
-                        requested = false;
-
-                    if (requested) {
-                        var deferred = $q.defer();
-
-                        deferred.resolve(data);
-
-                        return deferred.promise;
-                    }
+                    };
 
                     return Auth.getTokenClaims().then(
                         function (response) {
@@ -141,8 +138,6 @@
                             });
 
                             data.id = response.sub || 0;
-
-                            requested = true;
 
                             return data;
                         }
